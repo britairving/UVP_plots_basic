@@ -7,7 +7,7 @@ This toolbox is very much a work in progress and I welcome feedback and comments
 [UVP_submission_formatting](https://github.com/britairving/UVP_submission_formatting) may also be useful and is a repository that provides scripts to reformat UVP data downloaded from Ecotaxa for submission to data archival websites SeaBASS and BCO-DMO.
 
 ## MATLAB dependencies & requirements
-This toolbox was created with Matlab R2017b and tested on ....
+This toolbox was created using Matlab R2017b and tested on Matlab R2019a on both a PC and Mac. 
 Matlab version R2016b or higher is required.
 Users must have [m_map](https://www.eoas.ubc.ca/~rich/map.html). If any dependent functions are missing in the _utility_ folder please let me know.
 
