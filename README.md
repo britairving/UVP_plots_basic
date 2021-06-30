@@ -19,16 +19,39 @@ All example plots were generated using the data in the _testing_ folder. This da
 
 ### _UVP_workflow.m_ | START HERE!
 This script is the starting place where you define the project, filepaths, and variables you want to plot.
+Below are the section headers (use code-folding in Matlab Editor to see section headers clearly).
+* USER DEFINES _UVP_tools_ filepath. Adds the UVP_plots_basic repository folder and utility folder. 
+* USER DEFINES basic plot configuration, project nickname & Ecotaxa filename 
+* Read PAR file and calculate parameters from particle abundance and biovolume data
+* Read ZOO file with option to limit plotting to fully validated stations
+* Read CTD data (this will be implemented soon, but is not ready yet)
+* Set data to ZOO OR PAR OR CTD data based on _options.plot_type_ 
+* (OPTIONAL) USER hardcodes which variables you want to plot
+* Prompt: Determine which variables to plot, if not hardcoded. 
+* Remove two deepest depth bins in every profile 
+* Prompt: Decide if want to plot sections of data, or the whole range
+* PLOT | Plot standard 3 panel total particle abundance, total particle biovolume, and slope of PSD
+* PLOT | Plot vertical profiles of different sizes at each station
+* Loops through fields select to plot
+*   NON-GRIDDED: Waterfall plot - shows evolution of profiles throughout cruise
+*   NON-GRIDDED: plot_data_vs_depth(options);
+*   GRIDDED: Waterfall plot - shows evolution of data throughout cruise
+*   GRIDDED: 2D contour plot 
+*   GRIDDED: 3D contour plot 
+
 
 ### _UVP_read_odv_ecotaxa_exported_par.m_
 Reads in the UVP PAR file exported from Ecotaxa in detailed ODV format. Data is returned as structure _par_ with information on each field in _par_info_.
 
+```[par_table, par_info] = UVP_read_odv_ecotaxa_exported_par(par_file);```
 ### _UVP_calculate_PAR_fields.m_
 Calculates common variables from the standard UVP particulate output from Ecotaxa. I.e. particulate abundance [#/L] and particulate biovolume [ppm] or [mm^3/L]. New fields will be added here as the repository evolves. 
 
+```[par,par_info] = UVP_calculate_PAR_fields(par_table,par_info);```
 ### _UVP_read_odv_ecotaxa_exported_zoo.m_
 Reads in the UVP ZOO file exported from Ecotaxa in detailed ODV format. Data is returned as structure _zoo_ with information on each field in _zoo_info_.
 
+```[zoo, zoo_info] = UVP_read_odv_ecotaxa_exported_zoo(zoo_file);```
 ### _Read_hydrographic_cruise_hyfiles.m_
 This will likely be replaced in the future, with something to read in a variety of CTD and bottle data and merge with UVP data.
 
