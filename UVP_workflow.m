@@ -8,6 +8,10 @@ function UVP_workflow
 %    UVP_workflow is the wrapper script that you can set up to call
 %    plotting functions.
 %
+%  Citation:
+%    Brita Irving, (2021), UVP_plots_basic, GitHub repository,
+%    https://github.com/britairving/UVP_plots_basic
+%
 %  Authors:
 %    Brita K Irving  <bkirving@alaska.edu>
 %%
@@ -79,7 +83,7 @@ end
 % Still need to incorporate this...
 % Read_hydrographic_cruise_hyfiles
  
-%% 5 | PLOTS | Set data to ZOO OR PAR OR CTD data
+%% 5 | Set data to ZOO OR PAR OR CTD data
 % If you want to plot ZOO variables, data = zoo; etc
 switch options.plot_type
   case 'zoo'
@@ -99,7 +103,7 @@ switch options.plot_type
     error('plot_type not recognized: choices are zoo, par, or ctd')
 end
 
-%% 6 |  Manually select OR Hardcode which variables you want to plot
+%% 6 | Manually select OR Hardcode which variables you want to plot
 % Option I  : Select which fields you want to plot below (see Section 7)
 %   OR
 % Option II : hardcode using the following format
@@ -122,7 +126,7 @@ end
 %   plots.biovol.title = {'biovol_Rhizaria_Harosa';'biovol_Crustacea_Arthropoda'};
 %   plots.biovol.clims = [[0 20];[0 20]];
 
-%% 7 | PLOTS | Determine which variables to plot
+%% 7 | Determine which variables to plot
 if ~exist('plots','var') || isempty(plots)
   try
     plots = UVP_select_paramets_to_plot(data,data_info);
@@ -134,6 +138,7 @@ end
 
 
 %% 8 | Remove two deepest depth bins in every profile
+% default to removing last two depth bins
 [data] = uvp_remove_last_two_depth_bins(data);
 
 % Add basic data fields to options structure
@@ -178,11 +183,11 @@ if isfield(data,'bathy')
 end
 
 %% 11 | PLOTS | Standard PAR 2D vertical profile plots
-%% Plot standard 3 panel total particle abundance, total particle biovolume, and slope of PSD
+%% 11a | Plot standard 3 panel total particle abundance, total particle biovolume, and slope of PSD
 plot_uvp_multipanel(par,par_info,{'tot_par_abundance' 'tot_par_biovolume' 'slope_b'},options);
 
 
-%% Plot vertical profiles of different sizes at each station
+%% 11b | Plot vertical profiles of different sizes at each station
 plot_uvp_NSD(par,par_info,options);
 
 %% 12 | PLOTS | Generate plots for each field
