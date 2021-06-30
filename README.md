@@ -108,5 +108,5 @@ See [plotting functions](https://github.com/britairving/UVP_plots_basic/wiki/Plo
 ***
 # Citation/acknowledgement
 If you use this toolbox, please cite as follows:
-_Brita Irving, (2021), UVP_basic_plots, GitHub repository, https://github.com/britairving/UVP_basic_plots/_
+_Brita Irving, (2021), UVP_plots_basic, GitHub repository, https://github.com/britairving/UVP_plots_basic_
 ***
