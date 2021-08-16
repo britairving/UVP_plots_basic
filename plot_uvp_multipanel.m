@@ -19,8 +19,12 @@ end
 
 %% Defaults
 cfg.split_watercolumn = 1;
-prcntile_depths = prctile(par.Depth,[1 95]);      % Get percentiles in case there is a single really deep profile
-cfg.maxdepth    = ceil(prcntile_depths(2)/50)*50; % Round maximum depth to next 50m
+try
+  prcntile_depths = prctile(par.Depth,[1 95]);      % Get percentiles in case there is a single really deep profile
+catch
+  prcntile_depths = [5 max(par.Depth)-10];
+end
+  cfg.maxdepth    = ceil(prcntile_depths(2)/50)*50; % Round maximum depth to next 50m
 %% Initialize figure
 ax = makefig_subplots(numel(plot_vars),1);
 % ax = flipud(ax);
@@ -73,7 +77,11 @@ for nax = 1:numel(plot_vars)
   havg = plot_against_depth(a,nanmean(data.(var),2),data.depth,[0 cfg.maxdepth],'g');
   havg.LineWidth = 6;
   % Get percentiles of data so can adjust x axis accordingly
-  percentiles = prctile(par.(var),[0.001 99.5]);
+  try
+    percentiles = prctile(par.(var),[0.001 99.5]);
+  catch
+    percentiles = [min(par.(var)) max(par.(var))];
+  end
   a.XLim(2) = percentiles(2); %max(nanmean(data.(var),2));
   
   % remove depth labels

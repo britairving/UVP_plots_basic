@@ -11,8 +11,8 @@ function [par,par_info] = UVP_calculate_PAR_fields(par,par_info)
 %   
 %    Calculates: 
 %     datenum | Matlab datenum [Days since January 0, 0000]
-%     mips    | Abundance (102-203µm)[#/L]
-%     maps    | Abundance (203µm-2.58mm)[#/L]
+%     mips    | Abundance (102-203um)[#/L]
+%     maps    | Abundance (203um-2.58mm)[#/L]
 %     tot_par_abundance  | Total Abundance (smallest-2.58mm)[#/L]
 %     tot_par_abundance2 | Total Abundance (smallest->26mm)[#/L]
 %     tot_par_biovolume  | Total Biovolume (smallest-2.58mm)[mm^3/L]
@@ -53,14 +53,14 @@ par_info.datenum.long_name = 'Matlab datenum';
 %% 3 | Calculate MIPS and MAPS
 try
   % default mips and maps definition
-  mips = [102 203];  % 'LPM_(102-128_µm)[#/L]' to 'LPM_(161-203_µm)[#/L]'
-  mips_name = 'Abundance (102-203µm)[#/L]';
-  %   maps = [203 26]; % 'LPM_(203-256_µm)[#/L]' to 'LPM_(>26_mm)[#/L]'
-  %   maps_name = 'LPM (203µm-26mm)[#/L]';
-  maps = [203 2.58]; % 'LPM_(203-256_µm)[#/L]' to 'LPM_(2.05-2.58_mm)[#/L]'
-  maps_name = 'Abundance (203µm-2.58mm)[#/L]';
+  mips = [102 203];  % 'LPM_(102-128_um)[#/L]' to 'LPM_(161-203_um)[#/L]'
+  mips_name = 'Abundance (102-203um)[#/L]';
+  %   maps = [203 26]; % 'LPM_(203-256_um)[#/L]' to 'LPM_(>26_mm)[#/L]'
+  %   maps_name = 'LPM (203um-26mm)[#/L]';
+  maps = [203 2.58]; % 'LPM_(203-256_um)[#/L]' to 'LPM_(2.05-2.58_mm)[#/L]'
+  maps_name = 'Abundance (203um-2.58mm)[#/L]';
   idx_mips1 = find(contains(fields_wsizes,['LPM_(' num2str(mips(1)) '-']));
-  idx_mips2 = find(contains(fields_wsizes,['-' num2str(mips(2)) '_µm)[#']));
+  idx_mips2 = find(contains(fields_wsizes,['-' num2str(mips(2)) '_um)[#']));
   idx_maps1 = find(contains(fields_wsizes,['LPM_(' num2str(maps(1)) '-']));
   idx_maps2 = find(contains(fields_wsizes,[num2str(maps(2)) '_mm)[#']));
   if numel(idx_maps2) > 1
@@ -70,8 +70,8 @@ try
   fprintf(' Calculating MIPs from: %s to %s\n',fields_wsizes{idx_mips1},fields_wsizes{idx_mips2})
   fprintf(' Calculating MAPs from: %s to %s\n',fields_wsizes{idx_maps1},fields_wsizes{idx_maps2})
   % check to make sure table and column names were read correctly
-  par.mips = nansum(table2array(par(:,idx_mips1:idx_mips2)),2);
-  par.maps = nansum(table2array(par(:,idx_maps1:idx_maps2)),2);
+  par.mips = sum(table2array(par(:,idx_mips1:idx_mips2)),2,'omitnan');
+  par.maps = sum(table2array(par(:,idx_maps1:idx_maps2)),2,'omitnan');
   % add MIPs and MAPs to info structure 
   par_info.mips.name   = mips_name;
   par_info.maps.name   = maps_name;
@@ -113,7 +113,7 @@ try
     if strcmp(num_2,'>26_mm')
       num_2 = '>26';
     end
-    par.(name_string) = nansum(table2array(par(:,idx_tot_abund)),2);
+    par.(name_string) = sum(table2array(par(:,idx_tot_abund)),2,'omitnan');
     tot_par_abundance_name = ['Total Particle Abundance (' num_1 unt_1 '-' num_2 unt_2 ')[#/L]'];
     fprintf(' Calculating particle abundance: %s\n',tot_par_abundance_name)
     % add total particle abundance to info structure
@@ -121,10 +121,10 @@ try
     par_info.(name_string).unit        = '#/L';
     par_info.(name_string).long_name   =  ['Abundance of particles with an equivalent spherical diameter between ' num_1 unt_1 '-' num_2 unt_2];
 
-    if strcmp(unt_1,'µm')
+    if strcmp(unt_1,'um')
       num_1 = str2double(num_1)/1000;
     end
-    if strcmp(num_2,'µm')
+    if strcmp(num_2,'um')
       num_2 = str2double(num_2)/1000;
     end
     par_info.(name_string).size_bin_mm = [num_1 num_2];
@@ -162,17 +162,17 @@ try
     if strcmp(num_2,'>26_mm')
       num_2 = '>26';
     end
-    par.(name_string) = nansum(table2array(par(:,idx_tot_biovol)),2);
+    par.(name_string) = sum(table2array(par(:,idx_tot_biovol)),2,'omitnan');
     tot_par_biovolume_name = ['Total Particle Biovolume (' num_1 unt_1 '-' num_2 unt_2 ')[ppm]'];
     fprintf(' Calculating particle biovolume: %s\n',tot_par_biovolume_name)
     % add total particle biovolume to info structure
     par_info.(name_string).name        = tot_par_biovolume_name;
     par_info.(name_string).unit        = 'mm^3/L';
     par_info.(name_string).long_name   = ['Biovolume of particles with an equivalent spherical diameter between ' num_1 unt_1 '-' num_2 unt_2];
-    if strcmp(unt_1,'µm')
+    if strcmp(unt_1,'um')
       num_1 = str2double(num_1)/1000;
     end
-    if strcmp(num_2,'µm')
+    if strcmp(num_2,'um')
       num_2 = str2double(num_2)/1000;
     end
     par_info.(name_string).size_bin_mm = [num_1 num_2];
@@ -213,12 +213,12 @@ remove_abund_fields  = par.Properties.VariableNames(nperL);
 remove_biovol_fields = par.Properties.VariableNames(biovol);
 par(:,[nperL biovol])  = [];
 
-%% 8 | Calculate DNSD (Differential number size distribution) [#/m^3/µm] & DVSD (Differential volume size distribution) [µL/m^3/µm]
+%% 8 | Calculate DNSD (Differential number size distribution) [#/m^3/um] & DVSD (Differential volume size distribution) [uL/m^3/um]
 % ------------- Note on terminology ------------------------
 % HERE - we will use DVSD and DNSD. 
 % Different variables have been used for the same data refereing to the
 % noramlized particle number size distribution.
-% For example, DNSD, CSDn with units of [#/L/mm] or [#/m^3/µm]
+% For example, DNSD, CSDn with units of [#/L/mm] or [#/m^3/um]
 % where DNSD = differential number size distribution
 %       CSDn = normalized concentration size distribution 
 
@@ -226,11 +226,11 @@ par(:,[nperL biovol])  = [];
 fprintf(' Normalizing size distribution to the width of the bin (in milimeters) -- i.e. differential size distribution\n')
 for i=1:size(NSD,2)
   wid_mm(i) = diff(par_info.size_bins.sizemm(i,:));
-  DNSD(:,i) = NSD(:,i)./wid_mm(i); % [#/L/mm]                == [#/m^3/µm]
-  DVSD(:,i) = VSD(:,i)./wid_mm(i); % [mm^3/L/um] or [ppm/mm] == [µL/m^3/µm]
+  DNSD(:,i) = NSD(:,i)./wid_mm(i); % [#/L/mm]                == [#/m^3/um]
+  DVSD(:,i) = VSD(:,i)./wid_mm(i); % [mm^3/L/um] or [ppm/mm] == [uL/m^3/um]
 end
 % -------------------------- Notes on units --------------------------
-% Convert DNSD [#/L/mm] to DNSD (Differential number size distribution) [#/m^3/µm]
+% Convert DNSD [#/L/mm] to DNSD (Differential number size distribution) [#/m^3/um]
 % units specified by EXPORTS/SEABASS
 % convert [#/L/mm] to [#/L/um] where 1mm/1000um =1
 % DNSD_1 = DNSD./1000; % [#/L/um]
@@ -238,10 +238,10 @@ end
 % DNSD = DNSD_1./0.001; % [#/L/um]
 % I.e... this cancels out because  #/L/mm is eqiuvalent to # m^-3 um^-1
 
-% Convert VSDn [mm^3/L/mm] to DVSD (Differential volume size distribution) [µL/m^3/µm]
-% 1mm^3 = 1µL
+% Convert VSDn [mm^3/L/mm] to DVSD (Differential volume size distribution) [uL/m^3/um]
+% 1mm^3 = 1uL
 % 1L = 0.001m^3
-% 1mm = 1000µm
+% 1mm = 1000um
 % I.e... mm^3/L/mm is eqiuvalent to uL m^-3 um^-1
 % DVSD = DVSD; % [uL m^-3 um^-1]
 
@@ -322,7 +322,7 @@ for irow = 1:numel(par.profile)
       keyboard
     end
   end
-  par.meansize(irow) = nanmean(allsz);
+  par.meansize(irow) = mean(allsz,'omitnan');
 end
 % Add metadata
 par_info.meansize.name      = 'Particle mean size [mm]';
@@ -373,8 +373,8 @@ fprintf(' Calculating relative uncertainty based on counting statistics\n')
 % (+1pixel in every direction) gets relatively smaller the larger the
 % particle. Thresholding also induces uncertainties in size, as it defines
 % when the signal is large enough to register.
-% Since the smallest size bin we are considering is 50.8-64µm and a pixel
-% is ~0.01µm, ignore the contribution to uncertainty based on size.
+% Since the smallest size bin we are considering is 50.8-64um and a pixel
+% is ~0.01um, ignore the contribution to uncertainty based on size.
 
 % Due to no published uncertainties for UVP particle abundance or biovolume
 % calculations, we decided to use relative uncertainty for the time being.
@@ -390,19 +390,19 @@ par_info.rel_unc.long_name = 'relative_unc = sqrt(NSD*SampledVolume)/(NSD*Sample
 % par_info.u_NSD.unit      = '#/L';
 % par_info.u_NSD.long_name = 'Uncertainty in the number size distribution [#/L] where NSD_unc = relative_unc*NSD';
 % % Calculate uncertainty in VSD
-% par.u_VSD  = par.rel_unc .* par.VSD;  % [%]*[mm^3/L] = [mm^3/L]    canconvert to [µL/m^3] later
+% par.u_VSD  = par.rel_unc .* par.VSD;  % [%]*[mm^3/L] = [mm^3/L]    canconvert to [uL/m^3] later
 % par_info.u_VSD.name      = 'VSD uncertainty [mm^3/L]';
 % par_info.u_VSD.unit      = 'mm^3/L';
 % par_info.u_VSD.long_name = 'Uncertainty in the volume size distribution [mm^3/L] or [ppm] where VSD_unc = relative_unc*VSD';
 % % Calculate uncertainty in DNSD
-% par.u_DNSD = par.rel_unc .* par.DNSD; % [%]*[#/L/m] = [#/L/m] = [#/m^3/µm]
+% par.u_DNSD = par.rel_unc .* par.DNSD; % [%]*[#/L/m] = [#/L/m] = [#/m^3/um]
 % par_info.u_DNSD.name      = 'DNSD uncertainty [#/L/mm]';
 % par_info.u_DNSD.unit      = '#/L/mm';
-% par_info.u_DNSD.long_name = 'Uncertainty in the differential number size distribution [#/L/mm] or [#/m^3/µm] where DNSD_unc = relative_unc*DNSD';
+% par_info.u_DNSD.long_name = 'Uncertainty in the differential number size distribution [#/L/mm] or [#/m^3/um] where DNSD_unc = relative_unc*DNSD';
 % % Calculate uncertainty in DVSD
-% par.u_DVSD = par.rel_unc .* par.DVSD; % [%]*[mm^3/L/mm] = [mm^3/L/mm] = [µL/m^3/µm]
+% par.u_DVSD = par.rel_unc .* par.DVSD; % [%]*[mm^3/L/mm] = [mm^3/L/mm] = [uL/m^3/um]
 % par_info.u_DVSD.name      = 'DVSD uncertainty [mm^3/L/mm]';
 % par_info.u_DVSD.unit      = 'mm^3/L/mm';
-% par_info.u_DVSD.long_name = 'Uncertainty in the differential volume size distribution [mm^3/L/mm] or [µL/m^3/µm] where DVSD_unc = relative_unc*DVSD';
+% par_info.u_DVSD.long_name = 'Uncertainty in the differential volume size distribution [mm^3/L/mm] or [uL/m^3/um] where DVSD_unc = relative_unc*DVSD';
 
 end %% MAIN FUNCTION PAR = UVP_CALCULATE_PAR_FIELDS(PAR)

@@ -73,7 +73,8 @@ end
 if any (contains(cols,')_[mm3_l-1]') )
   cols = strrep(cols,')_[mm3_l-1]',')[ppm]'); % [mm^3/L] = [ppm]
 end
-
+% Replace micro character with "u", micro character is char(181) in matlab
+cols = strrep(cols,char(181),'u');
 %% 2 | Reformat variable names
 meta_idx = find(contains(table_options.VariableNames,'METAVAR'));
 % Remove unnecessary column name text
@@ -140,11 +141,11 @@ end
 
 %% 7 | DO NOT DELETE higher size bins after first size bin with real data
 if delete_all_empty_size_bins == 0
-  % For example, in many UVP5 HD datasets, the 50.8-64µm contains data, but
-  % the next size bin does not. For the non-HD units, the 102-128µm size bin
-  % contains data but the 128-161µm does not.
-  % Detection limit for UVP is approximately 100 µm but there is commonly
-  % data in the 50.8-64µm size bin and we want to maintain all columns with
+  % For example, in many UVP5 HD datasets, the 50.8-64um contains data, but
+  % the next size bin does not. For the non-HD units, the 102-128um size bin
+  % contains data but the 128-161um does not.
+  % Detection limit for UVP is approximately 100 um but there is commonly
+  % data in the 50.8-64um size bin and we want to maintain all columns with
   % data for posterity sake.
   nperL  = find(contains(cols,'[#/L]')); % Indices of number concentration variables
   biovol = find(contains(cols,'[ppm]')); % Indices of biovolume variables
@@ -200,14 +201,14 @@ for in = 1:num_sizes
     vsize.sizemm(in,:) = [sz1 NaN];
   else
     str_sizes = strsplit(vsize.strnam{in},'-');
-    str_size1 = erase(str_sizes{1},{'mm', 'µm'});
-    str_size2 = erase(str_sizes{2},{'mm', 'µm'});
+    str_size1 = erase(str_sizes{1},{'mm', 'um'});
+    str_size2 = erase(str_sizes{2},{'mm', 'um'});
     sz1 = str2double(str_size1);
     sz2 = str2double(str_size2);
     % convert numbers to mm
-    if contains(vsize.strnam{in},'µm') && contains(vsize.strnam{in},'mm') % only first number in [µm]
+    if contains(vsize.strnam{in},'um') && contains(vsize.strnam{in},'mm') % only first number in [um]
       vsize.sizemm(in,:) = [sz1./1000 sz2];
-    elseif contains(vsize.strnam{in},'µm') % both numbers in [µm]
+    elseif contains(vsize.strnam{in},'um') % both numbers in [um]
       vsize.sizemm(in,:) = [sz1./1000 sz2./1000];
     elseif contains(vsize.strnam{in},'mm') % both numbers in [mm]
       vsize.sizemm(in,:) = [sz1 sz2];
@@ -230,7 +231,7 @@ for in = 1:num_sizes
 end
 
 % Pull out size bin to include in human readable description
-size_bin_limits = strrep(vsize.strnam,'µm', ' micrometers'); 
+size_bin_limits = strrep(vsize.strnam,'um', ' micrometers'); 
 size_bin_limits = strrep(size_bin_limits,'mm', ' millimeters');
 abun_desc   = 'Abundance of particles with an equivalent spherical diameter between';
 biovol_desc = 'Biovolume of particles with an equivalent spherical diameter between'; % 'Biovolume, or volume size distribution, for particles';
@@ -240,7 +241,7 @@ biovol_desc = strcat(biovol_desc,{' '},size_bin_limits)';
 %% 10 | Simplify fieldnames
 % Currently, the column names in the table are generated automaticaly from
 % matlab and are not very easily human readable
-% For example: "LPM_50_8_64_m___L_1_" == "LPM (50.8-64_µm) [#/L]"
+% For example: "LPM_50_8_64_m___L_1_" == "LPM (50.8-64_um) [#/L]"
 nperL  = find(contains(cols,'[#/L]')); % Indices of number concentration variables
 biovol = find(contains(cols,'[ppm]')); % Indices of biovolume variables
 for ii = 1:numel(nperL)
@@ -264,10 +265,10 @@ units  = [units repmat({'#/L'},size(nperL)) repmat({'mm^3/L'},size(biovol))];
 %     Fcdom factory [ppb QSE]
 %     In situ Density Anomaly [kg/m3]
 %     Neutral Density [kg/m3]
-%     Nitrate [µmol/l]
-%     Oxygen [µmol/kg]
+%     Nitrate [umol/l]
+%     Oxygen [umol/kg]
 %     Oxygen [ml/l]
-%     PAR [µmol m-2 s-1]
+%     PAR [umol m-2 s-1]
 %     Part backscattering coef 470 nm [m-1]
 %     Pot. Temperature [degC] (any ref.)
 %     Potential Density Anomaly [kg/m3]
@@ -277,7 +278,7 @@ units  = [units repmat({'#/L'},size(nperL)) repmat({'mm^3/L'},size(biovol))];
 %     Pressure in Water Column [db] => MANDATORY for DEPTH PROFILES
 %     QC Flag
 %     Sound Speed c [m/s]
-%     SPAR [µmol m-2 s-1]
+%     SPAR [umol m-2 s-1]
 %     Temperature [degC]
 %     Time [yyyymmddhhmmssmmm] => MANDATORY FOR TIME DISPLAY
 
@@ -294,7 +295,7 @@ if numel(cols) > idx_lastbiovolume
       case 'oxygen_[umol_kg-1]'
         odv.Properties.VariableNames{ctd_indices(nidx)} = 'oxygen';
         descs = [descs 'Oxygen'];
-        units = [units 'µmol/kg'];
+        units = [units 'umol/kg'];
       case 'practical_salinity_[psu]'
         odv.Properties.VariableNames{ctd_indices(nidx)} = 'salinity';
         descs = [descs 'Salinity'];

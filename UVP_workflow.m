@@ -18,15 +18,15 @@ function UVP_workflow
 close all
 %% 0 | Make sure you're in the UVP_tools repository
 % *** CHANGE THIS DIRECTORY PATH TO MATCH YOUR LOCAL COMPUTER ***
-UVP_tools = '/Users/bkirving/Documents/MATLAB/UVP_tools';
+UVP_tools = 'D:\MATLAB\UVP_plots_basic';
 addpath(genpath(UVP_tools));  % Path to UVP_tools/utility & necessary other folders that contains dependent functions
 cd(UVP_tools)
 %% 1 | Define project nickname & Ecotaxa filenames
 % UVP data must be exported in detailed ODV format
 % < https://ecotaxa.obs-vlfr.fr/part/ >
 % Define options structure
-options.savefig   = 1;
-options.project   = 'p16n_2015'; % Project nickname use for saving figures and files
+options.savefig   = 0;
+options.project   = fullfile(pwd,'testing','p16n_2015'); % Project nickname use for saving figures and files
 % Grid via Latitude, longitude, or time
 options.grid_type = 'lat'; % 'time' 'lat' 'lon'
 options.plot_type = 'par'; % 'par' 'zoo' 'ctd'
@@ -112,12 +112,12 @@ end
 %   "clims" fields.
 % EXAMPLE #1: data.tot_par_abundance (i.e. "total particle abundance")
 %   plots.tot_par_abundance       = struct();
-%   plots.tot_par_abundance.title = {'Abundance (102-203µm)[#/L]'};
+%   plots.tot_par_abundance.title = {'Abundance (102-203um)[#/L]'};
 %   plots.tot_par_abundance.clims = [5.35 57.86];
 % EXAMPLE 2: data.VSD (i.e. "particle biovolume"). Since VSD is an NxM
 %   array, you need to define which sizes you want to use.
 %   plots.VSD       = struct();
-%   plots.VSD.title = {'Biovolume (102-128_µm)[ppm]'; 'Biovolume (128-161_µm)[ppm]'; 'Biovolume (161-203_µm)[ppm]'};
+%   plots.VSD.title = {'Biovolume (102-128_um)[ppm]'; 'Biovolume (128-161_um)[ppm]'; 'Biovolume (161-203_um)[ppm]'};
 %   plots.VSD.clims = [[0.0002 0.00366];[0.000559 0.0094];[0.00058 0.0106]];
 % EXAMPLE 3: ZOO data plotting abundance and biovolume for select taxa
 %   plots = struct();
@@ -167,19 +167,24 @@ catch
 end
 
 %% 10 | Load bathymetry
-if exist([data.header '_bathymetry.mat'],'file')
-  load([data.header '_bathymetry.mat'])
-  if isfield(bathy,'bathy_transect')
+try
+  if exist([data.header '_bathymetry.mat'],'file')
+    load([data.header '_bathymetry.mat'])
+    if isfield(bathy,'bathy_transect')
+      data.bathy = interp1(bathy.lat_transect,bathy.bathy_transect,data.latitude);
+    end % check if available
+  else
+    % bathy = structure with latitude, longitude, and bathymetry positions
+    bathy = get_bathymetry(data.longitude,data.latitude,data.header);
     data.bathy = interp1(bathy.lat_transect,bathy.bathy_transect,data.latitude);
-  end % check if available
-else
-  % bathy = structure with latitude, longitude, and bathymetry positions
-  bathy = get_bathymetry(data.longitude,data.latitude,data.header);
-  data.bathy = interp1(bathy.lat_transect,bathy.bathy_transect,data.latitude);
-end
-% Update options
-if isfield(data,'bathy')
-  options.bathy = data.bathy;
+  end
+  % Update options
+  if isfield(data,'bathy')
+    options.bathy = data.bathy;
+  end
+catch
+  fprintf('Could not load or download bathymetry\n')
+  fprintf('...see instructions on github page for details if you want to include bathymetry\n')
 end
 
 %% 11 | PLOTS | Standard PAR 2D vertical profile plots
@@ -188,6 +193,7 @@ plot_uvp_multipanel(par,par_info,{'tot_par_abundance' 'tot_par_biovolume' 'slope
 
 
 %% 11b | Plot vertical profiles of different sizes at each station
+% NSD is short for number size distribution and is in units of #/L
 plot_uvp_NSD(par,par_info,options);
 
 %% 12 | PLOTS | Generate plots for each field
@@ -223,10 +229,10 @@ for nfield = 1:numel(fields_to_plot)
       fprintf('-----------------------------------------\n')
       %% PLOTS OF NON-GRIDDED DATA
       % 1 | Waterfall plot - shows evolution of profiles throughout cruise
-      %plot_data_vs_depth_waterfall(options);
+      plot_data_vs_depth_waterfall(options);
       
       % 2 | Plot of variable vs depth
-      %plot_data_vs_depth(options);
+      plot_data_vs_depth(options);
       
       
       %% --------------------------------------------------------------------
