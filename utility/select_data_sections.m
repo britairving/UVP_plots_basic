@@ -49,8 +49,11 @@ if isempty(section_chc2) || section_chc2 == 1
   end
   
   %% OPTION 2 | Click points on a map
-else
   
+else
+  % random symbols
+  symb = {'+' 'h' 'o' 's' 'p' '-' 'd'};
+  symb = repmat(symb,1,20); % repeat a bunch of times incase many sections
   makefig;ax1 = subplot(4,1,1:2); ax2= subplot(4,1,3:4);  %ax3= subplot(4,1,4);
   scatter(ax1,opt.time,opt.lat,50,opt.time,'filled');
   datetick(ax1,'x','mm/dd'); grid(ax1,'on'); ylabel(ax1,'latitude');
@@ -90,10 +93,14 @@ else
     else
       rm_this = [rm_this; nx];
     end
-    % Remove empty sections
-    %bad = find(isnan(idx_section(:,1)) | isnan(idx_section(:,2)));
-    %rm_this = [rm_this; bad];
-    %idx_section(rm_this,:) = [];
+    % Visualize section chosen
+    try
+      hold(ax1,'on');hold(ax2,'on');
+      % Plot time vs latitude
+      plot(ax1,opt.time(idx_section(nx,1):idx_section(nx,2)),opt.lat(idx_section(nx,1):idx_section(nx,2)),symb{nx},'Color','k','LineWidth',1,'MarkerSize',15);
+      % Plot time vs longitud
+      plot(ax2,opt.time(idx_section(nx,1):idx_section(nx,2)),opt.lon(idx_section(nx,1):idx_section(nx,2)),symb{nx},'Color','k','LineWidth',1,'MarkerSize',15);
+    end
   end % Loop through number of "clicks" or sections
   bad = find(isnan(idx_section(:,1)) | isnan(idx_section(:,2)));
   if ~isempty(bad)
