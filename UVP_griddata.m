@@ -74,7 +74,7 @@ if cfg.maskXbyZ
     if isempty(inds)
       continue
     end
-    data_dep(jj) = nanmax(y(inds));
+    data_dep(jj) = max(y(inds),'omitnan');
     cfg.grid_ignore(:,jj) = YY(:,jj) > data_dep(jj);
   end
   % Convert to logical
