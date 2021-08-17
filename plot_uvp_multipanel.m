@@ -74,7 +74,7 @@ for nax = 1:numel(plot_vars)
   end
   
   % Plot average profile
-  havg = plot_against_depth(a,nanmean(data.(var),2),data.depth,[0 cfg.maxdepth],'g');
+  havg = plot_against_depth(a,mean(data.(var),2,'omitnan'),data.depth,[0 cfg.maxdepth],'g');
   havg.LineWidth = 6;
   % Get percentiles of data so can adjust x axis accordingly
   try
