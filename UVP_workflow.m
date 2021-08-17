@@ -209,7 +209,7 @@ for nfield = 1:numel(fields_to_plot)
   end
   % -----------------------------------------------------------------------
   %% Loop through sections of data
-  for nrng = 1:numel(num_sections)
+  for nrng = 1:num_sections
     % Pull out indices of current section
     if num_sections > 1
       xrng = options.sections(nrng,1):options.sections(nrng,2);
@@ -248,9 +248,10 @@ for nfield = 1:numel(fields_to_plot)
           fprintf('grid type should be "time" "lat" or "lon"\n')
           keyboard
       end
-      [X,Z,DAT] = UVP_griddata(x,options.depth,options.data);
-      LAT = griddata(x,options.depth,options.lat ,X,Z); % griddata okay here because nothing fancy, just latitude
-      LON = griddata(x,options.depth,options.lon,X,Z); % griddata okay here because nothing fancy, just longitude
+      
+      [X,Z,DAT] = UVP_griddata(x,options.depth(xrng),options.data(xrng));
+      LAT = griddata(x,options.depth(xrng),options.lat(xrng) ,X,Z); % griddata okay here because nothing fancy, just latitude
+      LON = griddata(x,options.depth(xrng),options.lon(xrng),X,Z); % griddata okay here because nothing fancy, just longitude
       
       % 2 | Waterfall plot - shows evolution of data throughout cruise
       plot_gridded_data_vs_depth_waterfall(X,Z,DAT,options);
