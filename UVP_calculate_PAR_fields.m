@@ -49,9 +49,33 @@ par.datenum = datenum(par.datetime);
 par_info.datenum.name      = 'Date';
 par_info.datenum.unit      = 'Days since January 0, 0000';
 par_info.datenum.long_name = 'Matlab datenum';
-
 %% 3 | Calculate MIPS and MAPS
+% MIPS = microscopic particles, or small micrometric particles
+% MAPS = macroscopic particles, or large macroscopic particles
+% Although the general definition is easy, the size ranges are somewhat
+% arbitrary. 
+% First - try to select which size bin limits to use for MIPS/MAPS with a
+% GUI. Then, if that does not work, default to MIPS = 102-203 micrometers
+% and MAPS = 203micrometers-2.58mm.
 try
+  [mips_sel,maps_sel] = UVP_select_abundance_size_limits(par_info);
+  % reindex to fieldnames using par_info.size_bins.NSDnam
+  idx_mips1 = find(strcmp(par.Properties.VariableNames,par_info.size_bins.NSDnam(mips_sel.idx_size_bin(1))));
+  idx_mips2 = find(strcmp(par.Properties.VariableNames,par_info.size_bins.NSDnam(mips_sel.idx_size_bin(2))));
+  idx_maps1 = find(strcmp(par.Properties.VariableNames,par_info.size_bins.NSDnam(maps_sel.idx_size_bin(1))));
+  idx_maps2 = find(strcmp(par.Properties.VariableNames,par_info.size_bins.NSDnam(maps_sel.idx_size_bin(2))));
+  mips = [par_info.size_bins.sizeum(mips_sel.idx_size_bin(1),1) par_info.size_bins.sizeum(mips_sel.idx_size_bin(2),2)];
+  mips_name = ['Abundance (' num2str(mips(1)) '-' num2str(mips(2)) 'um)[#/L]'];
+  maps = [par_info.size_bins.sizeum(maps_sel.idx_size_bin(1),1) par_info.size_bins.sizeum(maps_sel.idx_size_bin(2),2)];
+  maps_name = ['Abundance (' num2str(maps(1)) '-' num2str(maps(2)) 'um)[#/L]'];
+catch
+  % since the above manual metho did not work, try defaults MIPS = 102-203
+  % micrometers and MAPS = 203micrometers-2.58mm.
+  
+  % Note: if you want to hardcode the mips/maps, enter the numbers at the
+  % starting number within the size bin you want, and the ending number
+  % within the last size bin you want. Bin sizes can be seen by looking
+  % at variable par_info.size_bins.strnam
   % default mips and maps definition
   mips = [102 203];  % 'LPM_(102-128_um)[#/L]' to 'LPM_(161-203_um)[#/L]'
   mips_name = 'Abundance (102-203um)[#/L]';
@@ -63,6 +87,9 @@ try
   idx_mips2 = find(contains(fields_wsizes,['-' num2str(mips(2)) '_um)[#']));
   idx_maps1 = find(contains(fields_wsizes,['LPM_(' num2str(maps(1)) '-']));
   idx_maps2 = find(contains(fields_wsizes,[num2str(maps(2)) '_mm)[#']));
+end
+
+try
   if numel(idx_maps2) > 1
     idx_maps2 = idx_maps2(end);
   end
@@ -72,13 +99,13 @@ try
   % check to make sure table and column names were read correctly
   par.mips = sum(table2array(par(:,idx_mips1:idx_mips2)),2,'omitnan');
   par.maps = sum(table2array(par(:,idx_maps1:idx_maps2)),2,'omitnan');
-  % add MIPs and MAPs to info structure 
+  % add MIPs and MAPs to info structure
   par_info.mips.name   = mips_name;
   par_info.maps.name   = maps_name;
   par_info.mips.unit   = '#/L';
   par_info.maps.unit   = '#/L';
   par_info.mips.long_name = ['Abundance of particles with an equivalent spherical diameter between ' num2str(mips(1)) '-' num2str(mips(2))      ' micrometers'];
-  par_info.maps.long_name = ['Abundance of particles with an equivalent spherical diameter between ' num2str(maps(1)/1000) '-' num2str(maps(2)) ' millimeters'];             
+  par_info.maps.long_name = ['Abundance of particles with an equivalent spherical diameter between ' num2str(maps(1)/1000) '-' num2str(maps(2)) ' millimeters'];
 catch
   fprintf(' Could NOT calculate MIPs and MAPs\n')
   keyboard
@@ -199,7 +226,7 @@ end
 % where VSD = volume size distribution 
 %       biovolume = biovolume  
 
-nperL  = find(contains(fields_wsizes,'[#/L]')              & ~contains(fields_wsizes,'='));
+nperL  = find(contains(fields_wsizes,'[#/L]')              & ~contains(fields_wsizes,'=') & ~contains(fields_wsizes,'Abundance'));
 biovol = find(contains(fields_wsizes,{'[ppm]' '[mm^3/L]'}) & ~contains(fields_wsizes,'='));
 % Pull out NSD & VSD & convert to array
 NSD = table2array(par(:,nperL));  % [#/L]

@@ -13,7 +13,7 @@ dbstop if error
 xscale = 'log'; % 'log' or 'linear'
 %% Initialize figure
 makefig;
-pause(0.2); % pause to matlab a chance to catch up.
+pause(2); % pause to matlab a chance to catch up.
 fig = gcf;
 
 ax = gca;

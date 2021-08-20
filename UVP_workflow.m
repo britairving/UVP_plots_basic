@@ -16,6 +16,7 @@ function UVP_workflow
 %    Brita K Irving  <bkirving@alaska.edu>
 %%
 close all
+
 %% 0 | Make sure you're in the UVP_tools repository
 % *** CHANGE THIS DIRECTORY PATH TO MATCH YOUR LOCAL COMPUTER ***
 UVP_tools = 'D:\MATLAB\UVP_plots_basic';
