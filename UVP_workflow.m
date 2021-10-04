@@ -37,6 +37,7 @@ options.grid_type = 'lat'; % 'time' 'lat' 'lon'
 options.plot_type = 'par'; % 'par' 'zoo' 'ctd'
 % List of fully validated stations for ZOO data plotting
 options.validated = [options.project '_fully_validated_stations.txt'];
+options.filename_sectionsbyprofiles = fullfile(options.project,'sections_by_profile.csv');
 % Define filename of ZOO and PAR files
 %par_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_PAR_odv.txt');
 %zoo_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_ZOO_odv.txt');
@@ -199,12 +200,12 @@ end
 
 %% 11 | PLOTS | Standard PAR 2D vertical profile plots
 %% 11a | Plot standard 3 panel total particle abundance, total particle biovolume, and slope of PSD
-plot_uvp_multipanel(par,par_info,{'tot_par_abundance' 'tot_par_biovolume' 'slope_b'},options);
+%plot_uvp_multipanel(par,par_info,{'tot_par_abundance' 'tot_par_biovolume' 'slope_b'},options);
 
 
 %% 11b | Plot vertical profiles of different sizes at each station
 % NSD is short for number size distribution and is in units of #/L
-plot_uvp_NSD(par,par_info,options);
+%plot_uvp_NSD(par,par_info,options);
 
 %% 12 | PLOTS | Generate plots for each field
 % This just loops through selected fields
@@ -242,8 +243,8 @@ for nfield = 1:numel(fields_to_plot)
       %plot_data_vs_depth_waterfall(options);
 
       % 2 | Plot of variable vs depth
-      plot_data_vs_depth(options);
-      keyboard
+      %plot_data_vs_depth(options);
+      
       
       %% --------------------------------------------------------------------
       %% PLOTS OF GRIDDED DATA
@@ -265,15 +266,15 @@ for nfield = 1:numel(fields_to_plot)
       
       % 2 | Waterfall plot - shows evolution of data throughout cruise
       plot_gridded_data_vs_depth_waterfall(X,Z,DAT,options);
-      
+      keyboard
       % 3 | 2D confour plot
       fig = plot_2d_gridded_transect(X,Z,DAT,options);
       plot_map_inset(fig,options);
-      
+      keyboard
       % 4 | 3D contour plot
       fig = plot_3d_gridded_transect(LON,LAT,Z,DAT,options,bathy);
       plot_map_inset(fig,options);
-      
+      keyboard
     end  %% LOOP THROUGH NxM DATA
     % ---------------------------------------------------------------------
   end %% LOOP THROUGH SECTIONS OF DATA

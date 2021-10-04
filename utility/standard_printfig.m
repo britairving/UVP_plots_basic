@@ -6,6 +6,7 @@ function standard_printfig(figname)
 figname = strrep(figname,' ','_');
 figname = erase(figname,'[#/L]');
 figname = erase(figname,'[mm^3/L]');
+figname = erase(figname,'[#/m^3]');
 figname = strrep(figname,'(','_');
 figname = strrep(figname,')','_');
 figname = strrep(figname,'\','per');

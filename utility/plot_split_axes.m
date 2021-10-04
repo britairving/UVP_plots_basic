@@ -16,8 +16,9 @@ while maxdepth < split_depth
   split_depth = ax.YLim(2)/3;
   split_depth = floor(split_depth/100)*100; % Round to 100
 end
-
-
+if split_depth >= maxdepth
+  split_depth = floor((maxdepth/2)/100)*100;
+end
 %% change BOTTOM axis limits and shrink positions
 % The original axis ("ax") will become the bottom axis
 xlim1 = ax.XLim;
@@ -48,4 +49,10 @@ a_top.XLim = xlim1;
 if ~isempty(ax.Colorbar)
   ax.Colorbar.Position(4) = ax.Colorbar.Position(4)*2;
 end
+
+% Readjust axis so positions are correct
+pause(0.1); % let plot catch up
+ax.Position(3) = a_top.Position(3);
+pause(0.1); % let plot catch up
+
 end

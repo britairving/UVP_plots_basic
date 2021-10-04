@@ -15,6 +15,8 @@ function idx_section = select_data_sections(opt)
 fprintf('\nChoose how to split up sections\n')
 fprintf(' <1> Number of days (default)\n')
 fprintf(' <2> Click points on a map\n')
+fprintf(' <3> Specific profiles by entering profile names\n')
+fprintf(' <4> Read profiles from file\n')
 section_chc2 = input('Enter section choice: ');
 %% OPTION 1 | Number of days
 if isempty(section_chc2) || section_chc2 == 1
@@ -49,10 +51,9 @@ if isempty(section_chc2) || section_chc2 == 1
   end
   
   %% OPTION 2 | Click points on a map
-  
-else
+elseif section_chc2 == 2
   % random symbols
-  symb = {'+' 'h' 'o' 's' 'p' '-' 'd'};
+  symb = {'<' 'h' 'o' 's' 'p' '>' 'd'};
   symb = repmat(symb,1,20); % repeat a bunch of times incase many sections
   makefig;ax1 = subplot(4,1,1:2); ax2= subplot(4,1,3:4);  %ax3= subplot(4,1,4);
   scatter(ax1,opt.time,opt.lat,50,opt.time,'filled');
@@ -106,9 +107,64 @@ else
   if ~isempty(bad)
     idx_section(bad,:) = [];
   end
+%% OPTION 3 | Specific profiles
+elseif section_chc2 == 3
+  % Initialize section indice matrix
+  idx_section = nan(100,2);
   
+  [unique_profiles,~] = unique(opt.profile,'stable');
+  fprintf('Available profiles\n')
+  fprintf('%s\n',strjoin(unique_profiles,','))
+  fprintf('When you are done selecting sections, use <return> to exit loop\n')
+  done_selecting_profile_sections = 0;
+  section_num = 1;
+  
+  while ~done_selecting_profile_sections
+    fprintf('Section #%d profile range\n',section_num);
+    chc_p1 = input('  profile1: ','s');
+    chc_p2 = input('  profile2: ','s');
+    if ismember(chc_p1,unique_profiles) && ismember(chc_p2,unique_profiles) 
+      idx_section(section_num,1) = find(strcmp(opt.profile,chc_p1),1);
+      idx_section(section_num,2) = find(strcmp(opt.profile,chc_p2),1,'last');
+      section_num = section_num + 1;
+    elseif isempty(chc_p1) && isempty(chc_p2)
+      done_selecting_profile_sections = 1;
+      rm_placeholders = isnan(idx_section(:,1)) & isnan(idx_section(:,2));
+      idx_section(rm_placeholders,:) = [];
+    else
+      fprintf('profiles not found, try again\n')
+    end
+    
+  end
+  %% OPTION 4 | Read profiles from file
+elseif section_chc2 == 4
+  if isfield(opt,'filename_sectionsbyprofiles') && exist(opt.filename_sectionsbyprofiles,'file')
+    section_file = opt.filename_sectionsbyprofiles;
+  else
+    fprintf('** File must be formatted as follows ** \n')
+    fprintf('"section_p1","section_p2"\n')
+    fprintf('section1_p1,section1_p2\n')
+    fprintf('section2_p1,section2_p2\n')
+    fprintf('section3_p1,section3_p2\n')
+    fprintf('section4_p1,section4_p2\n')
+    fprintf('...\n')
+    section_file = input('Enter filename: ','s');
+    if ~exist(section_file,'file')
+      fprintf('tried to find file "%s", but unsuccessful\n',section_file)
+      error('File does not exist...')
+    end
+  end
+  sections = readtable(section_file,'FileType','text','HeaderLines',0);
+  if ~ismember('section_p1',sections.Properties.VariableNames) || ~ismember('section_p2',sections.Properties.VariableNames)
+    fprintf('file "%s" must have column names "section_p1" and "section_p2"\n',section_file)
+    error('File does not have proper column names...')
+  end
+  num_sections = size(sections,1);
+  idx_section = nan(num_sections,2);
+  for nsect = 1:num_sections
+    idx_section(nsect,1) = find(strcmp(opt.profile,sections.section_p1(nsect)),1);
+    idx_section(nsect,2) = find(strcmp(opt.profile,sections.section_p2(nsect)),1);
+  end
 end % CHOICE ON HOW TO SELECT SECTIONS
-
-
 
 end %% MAIN SCRIPT
