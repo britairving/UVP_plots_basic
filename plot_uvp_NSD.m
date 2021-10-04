@@ -12,11 +12,11 @@ function plot_uvp_NSD(par,par_info,options)
 dbstop if error
 xscale = 'log'; % 'log' or 'linear'
 %% Initialize figure
+
 makefig;
 pause(2); % pause to matlab a chance to catch up.
 fig = gcf;
-
-ax = gca;
+aNSD = gca;
 
 %% Pull out unique profiles and number of size bins
 profiles  = unique(par.profile);
@@ -35,33 +35,33 @@ for nv = 1:numel(variables)
   for np = 1:numel(profiles)
     try
       idx_profile = strcmp(par.profile,profiles{np});
-      title(ax,['Profile: ' strrep(profiles{np},'_','\_') ' | ' var_title{nv}])
-      hold(ax,'on');
-      ax.YLabel.String = 'Depth [m]';
+      title(aNSD,['Profile: ' strrep(profiles{np},'_','\_') ' | ' var_title{nv}])
+      hold(aNSD,'on');
+      aNSD.YLabel.String = 'Depth [m]';
     catch
       keyboard
     end
     %% Loop through size bins
     for nsz = 1:size(par.(var),2) % Loop
       % Plot profile data
-      plot(ax,par.(var)(idx_profile,nsz),par.Depth(idx_profile),'Color',size_clrs(nsz,:),...
+      plot(aNSD,par.(var)(idx_profile,nsz),par.Depth(idx_profile),'Color',size_clrs(nsz,:),...
         'Marker','o','MarkerSize',3,...
         'LineWidth',2,'LineStyle','-','DisplayName',par_info.(var).size_bin_st{nsz})
     end %% SIZE BINS
-    % set xaxis to log or linear scale
-    ax.XScale = xscale;
-    grid(ax,'on');
-    ax.XLabel.String = [var_title{nv} ' [' par_info.(var).unit{1} ']'];
+    % set xaNSDis to log or linear scale
+    aNSD.XScale = xscale;
+    grid(aNSD,'on');
+    aNSD.XLabel.String = [var_title{nv} ' [' par_info.(var).unit{1} ']'];
     % show legend
     try
-      hl = legend(ax,'show');
+      hl = legend(aNSD,'show');
       hl.FontSize = 14;
       hl.Location = 'eastoutside';
     catch
-      axes(ax);
+      axes(aNSD);
       legend;
-      ax.Legend.FontSize = 14;
-      ax.Legend.Location = 'eastoutside';
+      aNSD.Legend.FontSize = 14;
+      aNSD.Legend.Location = 'eastoutside';
       % not working on Matlab MAC
     end
     %% Save figure
@@ -69,7 +69,7 @@ for nv = 1:numel(variables)
       standard_printfig([options.project '_' var '_' profiles{np}]);
     end
     pause(0.05); % wait half a second for matlab to catch up
-    cla(ax);
+    cla(aNSD);
   end %% PROFILES
   
 end %% DATA TYPES (NSD, VSD, & differential forms)

@@ -19,7 +19,11 @@ close all
 
 %% 0 | Make sure you're in the UVP_tools repository
 % *** CHANGE THIS DIRECTORY PATH TO MATCH YOUR LOCAL COMPUTER ***
-UVP_tools = 'D:\MATLAB\UVP_plots_basic';
+if ismac
+  UVP_tools = '/Users/bkirving/Documents/MATLAB/UVP_plots_basic'; 
+elseif ispc
+  UVP_tools = 'D:\MATLAB\UVP_plots_basic';
+end
 addpath(genpath(UVP_tools));  % Path to UVP_tools/utility & necessary other folders that contains dependent functions
 cd(UVP_tools)
 %% 1 | Define project nickname & Ecotaxa filenames
@@ -27,15 +31,17 @@ cd(UVP_tools)
 % < https://ecotaxa.obs-vlfr.fr/part/ >
 % Define options structure
 options.savefig   = 0;
-options.project   = fullfile(pwd,'testing','p16n_2015'); % Project nickname use for saving figures and files
+options.project   = fullfile(pwd,'testing','exports'); % Project nickname use for saving figures and files
 % Grid via Latitude, longitude, or time
 options.grid_type = 'lat'; % 'time' 'lat' 'lon'
 options.plot_type = 'par'; % 'par' 'zoo' 'ctd'
 % List of fully validated stations for ZOO data plotting
 options.validated = [options.project '_fully_validated_stations.txt'];
 % Define filename of ZOO and PAR files
-par_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_PAR_odv.txt');
-zoo_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_ZOO_odv.txt');
+%par_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_PAR_odv.txt');
+%zoo_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_ZOO_odv.txt');
+par_file = fullfile(UVP_tools,'testing','exports','export_detailed_20210820_16_57_PAR_odv.txt');
+zoo_file = fullfile(UVP_tools,'testing','exports','export_detailed_20210820_16_57_ZOO_odv.txt');
 
 % Change into project directory so all data will be saved there
 if ~exist(options.project,'dir'); mkdir(options.project); end
@@ -127,6 +133,9 @@ end
 %   plots.biovol.title = {'biovol_Rhizaria_Harosa';'biovol_Crustacea_Arthropoda'};
 %   plots.biovol.clims = [[0 20];[0 20]];
 
+plots = struct();
+plots.meansize.title = {'Particle mean size [mm]'};
+plots.meansize.clims = [[0.092167 0.25482]];
 %% 7 | Determine which variables to plot
 if ~exist('plots','var') || isempty(plots)
   try
@@ -230,11 +239,11 @@ for nfield = 1:numel(fields_to_plot)
       fprintf('-----------------------------------------\n')
       %% PLOTS OF NON-GRIDDED DATA
       % 1 | Waterfall plot - shows evolution of profiles throughout cruise
-      plot_data_vs_depth_waterfall(options);
-      
+      %plot_data_vs_depth_waterfall(options);
+
       % 2 | Plot of variable vs depth
       plot_data_vs_depth(options);
-      
+      keyboard
       
       %% --------------------------------------------------------------------
       %% PLOTS OF GRIDDED DATA

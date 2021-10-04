@@ -19,9 +19,12 @@ dbstop if error
 if isfield(opt,'section_idx')
   depth = opt.depth(opt.section_idx);
   data  = opt.data(opt.section_idx);
+  profile_labels = unique(opt.profile(opt.section_idx));
 else
   depth = opt.depth;
   data  = opt.data;
+  %% Get unique profiles
+  profile_labels = unique(opt.profile);
 end
 %% Defaults
 cfg.split_watercolumn = 1;
@@ -35,17 +38,18 @@ ax = gca;
 
 % Find appropriate interval to separate profiles
 data_percentiles = prctile(data,[1 99]);
-%% Get unique profiles
-profile_labels = unique(opt.profile);
 
 %% Loop through profiles and plot data
 for np = 1:numel(profile_labels) % Loop
-  idx_profile = strcmp(opt.profile,profile_labels{np});
+  idx_profile = find(strcmp(opt.profile,profile_labels{np}));
   % Plot profile data
-  plot_against_depth(ax,data(idx_profile),depth(idx_profile))
-  plot_against_depth(ax,smooth(data(idx_profile),3,'moving'),depth(idx_profile),ax.YLim,'g')
+  if isempty(idx_profile)
+    continue
+  end
+  plot_against_depth(ax,data(idx_profile),depth(idx_profile));
+  plot_against_depth(ax,smooth(data(idx_profile),3,'moving'),depth(idx_profile),ax.YLim,'g');
   ax.XLim = data_percentiles;
-  title(ax,['Profile: ' strrep(profile_labels{np},'_','\_') ' | ' strrep(opt.plot_title,'_',' ')])
+  title(ax,['Profile: ' strrep(profile_labels{np},'_','\_') ' | ' strrep(opt.plot_title,'_',' ')]);
   if opt.savefig
     standard_printfig([profile_labels{np} '_' strrep(opt.plot_title,'_',' ')]);
   end
