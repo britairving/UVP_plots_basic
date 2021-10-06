@@ -16,7 +16,18 @@ function UVP_workflow
 %    Brita K Irving  <bkirving@alaska.edu>
 %%
 close all
-
+fprintf(' ********************************************************\n')
+fprintf(' ADD PROMPT: Do you want to plot individual station data?\n')
+fprintf(' ********************************************************\n')
+fprintf(' ADD PLOTS:\n')
+fprintf('     1. diurnal patterns day/night +/- 1 hour sunset\n')
+fprintf('     2. Pie charts of zoo living/non-living\n')
+fprintf('     3. euphotic vs non-euphotic\n')
+fprintf('     4. break into futher depth sections?\n')
+fprintf('     5. Others from EXPORTS UVP Results webinar Aug3-2020\n') %https://docs.google.com/presentation/d/1tHKvPtbA6SyDpSdu59G_l5s-BkLOG_uI/edit?usp=sharing&ouid=110344274478839061352&rtpof=true&sd=true
+fprintf(' ********************************************************\n')
+fprintf(' Figure out better way to do bathymetry -- or skip if cannot load\n')
+fprintf(' ********************************************************\n')
 %% 0 | Make sure you're in the UVP_tools repository
 % *** CHANGE THIS DIRECTORY PATH TO MATCH YOUR LOCAL COMPUTER ***
 if ismac
@@ -37,6 +48,7 @@ options.grid_type = 'lat'; % 'time' 'lat' 'lon'
 options.plot_type = 'par'; % 'par' 'zoo' 'ctd'
 % List of fully validated stations for ZOO data plotting
 options.validated = [options.project '_fully_validated_stations.txt'];
+% Optional: List of sections defined by profile ranges
 options.filename_sectionsbyprofiles = fullfile(options.project,'sections_by_profile.csv');
 % Define filename of ZOO and PAR files
 %par_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_PAR_odv.txt');
@@ -136,7 +148,7 @@ end
 
 plots = struct();
 plots.meansize.title = {'Particle mean size [mm]'};
-plots.meansize.clims = [[0.092167 0.25482]];
+plots.meansize.clims = [0.092167 0.25482];
 %% 7 | Determine which variables to plot
 if ~exist('plots','var') || isempty(plots)
   try
@@ -177,6 +189,7 @@ catch
   num_sections = 1;
 end
 
+%% 10 | Decide if want to plot individual station data
 %% 10 | Load bathymetry
 try
   if exist([data.header '_bathymetry.mat'],'file')
@@ -200,12 +213,15 @@ end
 
 %% 11 | PLOTS | Standard PAR 2D vertical profile plots
 %% 11a | Plot standard 3 panel total particle abundance, total particle biovolume, and slope of PSD
-%plot_uvp_multipanel(par,par_info,{'tot_par_abundance' 'tot_par_biovolume' 'slope_b'},options);
-
+if strcmp(options.plot_type,'par')
+  plot_uvp_multipanel(par,par_info,{'tot_par_abundance' 'tot_par_biovolume' 'slope_b'},options);
+end
 
 %% 11b | Plot vertical profiles of different sizes at each station
 % NSD is short for number size distribution and is in units of #/L
-%plot_uvp_NSD(par,par_info,options);
+if options.plot_station_data
+  plot_uvp_NSD(par,par_info,options);
+end
 
 %% 12 | PLOTS | Generate plots for each field
 % This just loops through selected fields
@@ -239,12 +255,13 @@ for nfield = 1:numel(fields_to_plot)
       fprintf('Plotting %s: %s\n',field,options.plot_title)
       fprintf('-----------------------------------------\n')
       %% PLOTS OF NON-GRIDDED DATA
-      % 1 | Waterfall plot - shows evolution of profiles throughout cruise
-      %plot_data_vs_depth_waterfall(options);
-
-      % 2 | Plot of variable vs depth
-      %plot_data_vs_depth(options);
-      
+      if options.plot_station_data
+        % 1 | Waterfall plot - shows evolution of profiles throughout cruise
+        plot_data_vs_depth_waterfall(options);
+        
+        % 2 | Plot of variable vs depth
+        plot_data_vs_depth(options);
+      end
       
       %% --------------------------------------------------------------------
       %% PLOTS OF GRIDDED DATA
@@ -264,14 +281,11 @@ for nfield = 1:numel(fields_to_plot)
       LAT = griddata(x,options.depth(xrng),options.lat(xrng) ,X,Z); % griddata okay here because nothing fancy, just latitude
       LON = griddata(x,options.depth(xrng),options.lon(xrng),X,Z); % griddata okay here because nothing fancy, just longitude
       
-      % 2 | Waterfall plot - shows evolution of data throughout cruise
-      plot_gridded_data_vs_depth_waterfall(X,Z,DAT,options);
-      keyboard
-      % 3 | 2D confour plot
+      % 2 | 2D confour plot
       fig = plot_2d_gridded_transect(X,Z,DAT,options);
       plot_map_inset(fig,options);
       keyboard
-      % 4 | 3D contour plot
+      % 3 | 3D contour plot
       fig = plot_3d_gridded_transect(LON,LAT,Z,DAT,options,bathy);
       plot_map_inset(fig,options);
       keyboard
