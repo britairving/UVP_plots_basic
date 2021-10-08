@@ -194,48 +194,48 @@ for ntaxa = 1:numel(names.original)
   info.avgesd.parent{ntaxa}       = names.parent{ntaxa};
 end
 
-%% 10 | Query WoRMS to pull out AphiaID match for each taxonomic name
-% World Register of Marine Species (WoRMS) is the official taxonomic
-% reference list for the Ocean Biodiversity Information System (OBIS) and
-% can be used to provide machine-readable taxonomic identifiers for living
-% organisms.  Taxonomic names are matched with a WoRMS AphiaID to the
-% lowest taxonomic rank that can be identified.
-try 
-  save_taxa_filename = strrep(zoo_file,'.txt','_taxa.mat');
-  if ~exist(save_taxa_filename,'file')
-    % Initialize table used as input to WoRMS_AphiaID_taxa_match.m script.
-    % Inputs: taxa | table with fields Name & Name_parent
-    taxa = table();
-    taxa.Name          = names.child';  % taxa name, lowest level.        Required field in WoRMS_AphiaID_taxa_match.m.
-    taxa.Name_parent   = names.parent'; % taxa parent name, if available. Required field in WoRMS_AphiaID_taxa_match.m.
-    
-    check_children_manual = false; % true = checks full classifcation of parent if child doesn't have a match and asks user. false = skips this.
-    fprintf('  Querying WoRMS database for AphiaID\n')
-    taxa = WoRMS_AphiaID_taxa_match(taxa,check_children_manual,'ecotaxa');
-    fprintf('  Saving taxa matches to %s\n',[pwd filesep save_taxa_filename])
-    save(save_taxa_filename,'taxa');
-  else % Load data instead of rerunning everything
-    fprintf('  Loading..%s\n',save_taxa_filename)
-    load(save_taxa_filename);
-  end
-  % Store AphiaIDs to zoo information 
-  info.abund.AphiaID  = repmat({''},numel(names.original),1);
-  info.biovol.AphiaID = repmat({''},numel(names.original),1);
-  info.avgesd.AphiaID = repmat({''},numel(names.original),1);
-  info.abund.AphiaID_parent  = repmat({''},numel(names.original),1);
-  info.biovol.AphiaID_parent = repmat({''},numel(names.original),1);
-  info.avgesd.AphiaID_parent = repmat({''},numel(names.original),1);
-  for ntaxa = 1:numel(names.original)
-    info.abund.AphiaID(ntaxa)  = taxa.AphiaID(ntaxa);
-    info.biovol.AphiaID(ntaxa) = taxa.AphiaID(ntaxa);
-    info.avgesd.AphiaID(ntaxa) = taxa.AphiaID(ntaxa);
-    info.abund.AphiaID_parent(ntaxa)  = taxa.AphiaID_parent(ntaxa);
-    info.biovol.AphiaID_parent(ntaxa) = taxa.AphiaID_parent(ntaxa);
-    info.avgesd.AphiaID_parent(ntaxa) = taxa.AphiaID_parent(ntaxa);
-  end
-catch
-  fprintf(' WoRMS AphiaID query did not work\n')
-end
+% %% 10 | Query WoRMS to pull out AphiaID match for each taxonomic name
+% % World Register of Marine Species (WoRMS) is the official taxonomic
+% % reference list for the Ocean Biodiversity Information System (OBIS) and
+% % can be used to provide machine-readable taxonomic identifiers for living
+% % organisms.  Taxonomic names are matched with a WoRMS AphiaID to the
+% % lowest taxonomic rank that can be identified.
+% try 
+%   save_taxa_filename = strrep(zoo_file,'.txt','_taxa.mat');
+%   if ~exist(save_taxa_filename,'file')
+%     % Initialize table used as input to WoRMS_AphiaID_taxa_match.m script.
+%     % Inputs: taxa | table with fields Name & Name_parent
+%     taxa = table();
+%     taxa.Name          = names.child';  % taxa name, lowest level.        Required field in WoRMS_AphiaID_taxa_match.m.
+%     taxa.Name_parent   = names.parent'; % taxa parent name, if available. Required field in WoRMS_AphiaID_taxa_match.m.
+%     
+%     check_children_manual = false; % true = checks full classifcation of parent if child doesn't have a match and asks user. false = skips this.
+%     fprintf('  Querying WoRMS database for AphiaID\n')
+%     taxa = WoRMS_AphiaID_taxa_match(taxa,check_children_manual,'ecotaxa');
+%     fprintf('  Saving taxa matches to %s\n',[pwd filesep save_taxa_filename])
+%     save(save_taxa_filename,'taxa');
+%   else % Load data instead of rerunning everything
+%     fprintf('  Loading..%s\n',save_taxa_filename)
+%     load(save_taxa_filename);
+%   end
+%   % Store AphiaIDs to zoo information 
+%   info.abund.AphiaID  = repmat({''},numel(names.original),1);
+%   info.biovol.AphiaID = repmat({''},numel(names.original),1);
+%   info.avgesd.AphiaID = repmat({''},numel(names.original),1);
+%   info.abund.AphiaID_parent  = repmat({''},numel(names.original),1);
+%   info.biovol.AphiaID_parent = repmat({''},numel(names.original),1);
+%   info.avgesd.AphiaID_parent = repmat({''},numel(names.original),1);
+%   for ntaxa = 1:numel(names.original)
+%     info.abund.AphiaID(ntaxa)  = taxa.AphiaID(ntaxa);
+%     info.biovol.AphiaID(ntaxa) = taxa.AphiaID(ntaxa);
+%     info.avgesd.AphiaID(ntaxa) = taxa.AphiaID(ntaxa);
+%     info.abund.AphiaID_parent(ntaxa)  = taxa.AphiaID_parent(ntaxa);
+%     info.biovol.AphiaID_parent(ntaxa) = taxa.AphiaID_parent(ntaxa);
+%     info.avgesd.AphiaID_parent(ntaxa) = taxa.AphiaID_parent(ntaxa);
+%   end
+% catch
+%   fprintf(' WoRMS AphiaID query did not work\n')
+% end
 
 %% 11 | Pull out arrays of data types & Remove individual abundance, biovolume, and avgesd variables
 abund  = table2array(odv(:,idx_abund));

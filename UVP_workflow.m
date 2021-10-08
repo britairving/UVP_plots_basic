@@ -1,23 +1,30 @@
-function UVP_workflow
+function UVP_workflow(toolbox_dir,config_script)
 %FUNCTION UVP_WORKFLOW
 %
 %  Syntax:
-%    UVP_WORKFLOW
+%    UVP_workflow(toolbox_dir,filename)
+%
+%  Inputs:  
+%    toolbox_dir   = directory path for UVP_plots_basic toolbox
+%    config_script = configuration script that defines files, and script
+%    options
 %
 %  Description:
 %    UVP_workflow is the wrapper script that you can set up to call
 %    plotting functions.
-%
+%    
 %  Citation:
 %    Brita Irving, (2021), UVP_plots_basic, GitHub repository,
 %    https://github.com/britairving/UVP_plots_basic
 %
 %  Authors:
 %    Brita K Irving  <bkirving@alaska.edu>
+%    Code is based on work of Andrew McDonnell, Stephanie O'Daly,
+%    and Jessica Pretty. 
+% 
 %%
 close all
 fprintf(' ********************************************************\n')
-fprintf(' ADD PROMPT: Do you want to plot individual station data?\n')
 fprintf(' ********************************************************\n')
 fprintf(' ADD PLOTS:\n')
 fprintf('     1. diurnal patterns day/night +/- 1 hour sunset\n')
@@ -26,72 +33,60 @@ fprintf('     3. euphotic vs non-euphotic\n')
 fprintf('     4. break into futher depth sections?\n')
 fprintf('     5. Others from EXPORTS UVP Results webinar Aug3-2020\n') %https://docs.google.com/presentation/d/1tHKvPtbA6SyDpSdu59G_l5s-BkLOG_uI/edit?usp=sharing&ouid=110344274478839061352&rtpof=true&sd=true
 fprintf(' ********************************************************\n')
-fprintf(' Figure out better way to do bathymetry -- or skip if cannot load\n')
-fprintf(' ********************************************************\n')
+
 %% 0 | Make sure you're in the UVP_tools repository
 % *** CHANGE THIS DIRECTORY PATH TO MATCH YOUR LOCAL COMPUTER ***
-if ismac
-  UVP_tools = '/Users/bkirving/Documents/MATLAB/UVP_plots_basic'; 
-elseif ispc
-  UVP_tools = 'D:\MATLAB\UVP_plots_basic';
+addpath(genpath(toolbox_dir));  % Path to UVP_plots_basic/utility & necessary other folders that contains dependent functions
+
+%% 1 | Read configuration script
+% first, parse the path to the configure script
+[project_folder,script_name,~] = fileparts(config_script);
+
+try
+  cd(project_folder) % changed directory into project folder
+  eval(['options = ' script_name])% evaulate the script to read in info
+catch
+  fprintf('Failed trying to run configure script: %s \n',config_script)
+  fprintf('Check the path is correct\n');
 end
-addpath(genpath(UVP_tools));  % Path to UVP_tools/utility & necessary other folders that contains dependent functions
-cd(UVP_tools)
-%% 1 | Define project nickname & Ecotaxa filenames
-% UVP data must be exported in detailed ODV format
-% < https://ecotaxa.obs-vlfr.fr/part/ >
-% Define options structure
-options.savefig   = 0;
-options.project   = fullfile(pwd,'testing','exports'); % Project nickname use for saving figures and files
-% Grid via Latitude, longitude, or time
-options.grid_type = 'lat'; % 'time' 'lat' 'lon'
-options.plot_type = 'par'; % 'par' 'zoo' 'ctd'
-% List of fully validated stations for ZOO data plotting
-options.validated = [options.project '_fully_validated_stations.txt'];
-% Optional: List of sections defined by profile ranges
-options.filename_sectionsbyprofiles = fullfile(options.project,'sections_by_profile.csv');
-% Define filename of ZOO and PAR files
-%par_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_PAR_odv.txt');
-%zoo_file = fullfile(UVP_tools,'testing','p16n_2015_uvpsn009_dataset','export_detailed_20210325_18_53_ZOO_odv.txt');
-par_file = fullfile(UVP_tools,'testing','exports','export_detailed_20210820_16_57_PAR_odv.txt');
-zoo_file = fullfile(UVP_tools,'testing','exports','export_detailed_20210820_16_57_ZOO_odv.txt');
 
-% Change into project directory so all data will be saved there
-if ~exist(options.project,'dir'); mkdir(options.project); end
-cd(options.project)
-
-% generate filename to save matlab formatted UVP data
-zoo_matfile = [options.project '_zoo.mat'];
-par_matfile = [options.project '_par.mat'];
-
+% Check that necessary components are there
+if ~isfield(options,'savefig')
+  options.savefig   = 0; % default to NO
+end
+if ~isfield(options,'grid_type')
+  options.grid_type = 'time'; % 'time' 'lat' 'lon'
+end
+if ~isfield(options,'plot_type')
+  options.plot_type = 'par'; % 'par' 'zoo' 'ctd'
+end
+if ~isfield(options,'plot_station_data')
+  options.plot_station_data = 0; % default to NO
+end
 %% 2 | Read PAR file and calculate parameters from particle abundance and biovolume data
-if exist(par_matfile,'file')
-  load(par_matfile);
+if exist(options.par_matfile,'file')
+  load(options.par_matfile);
 else
   % 1a| Read ODV PAR file exported from Ecotaxa
-  [par_table, par_info] = UVP_read_odv_ecotaxa_exported_par(par_file);
+  [par_table, par_info] = UVP_read_odv_ecotaxa_exported_par(options.par_file);
   % 1b| Calculate more parameters from particle abundance and biovolume data
   [par,par_info] = UVP_calculate_PAR_fields(par_table,par_info);
-  % 1c| add project for filename creation and clarify
-  par.header = options.project;
-  % 1d| Save data to file, the -v7.3 is just a compression flag
-  save(par_matfile,'par','par_info','-v7.3');
+
+  % 1c| Save data to file, the -v7.3 is just a compression flag
+  save(options.par_matfile,'par','par_info','-v7.3');
 end
 
 %% 3 | Read ZOO file with option to limit plotting to fully validated stations
-if exist(zoo_matfile,'file')
-  fprintf('Loading ZOO data %s\n',zoo_matfile);
-  load(zoo_matfile);
+if exist(options.zoo_matfile,'file')
+  fprintf('Loading ZOO data %s\n',options.zoo_matfile);
+  load(options.zoo_matfile);
   
 else
   % 2a| Read ZOO file exported from Ecotaxa
-  [zoo, zoo_info] = UVP_read_odv_ecotaxa_exported_zoo(zoo_file);
+  [zoo, zoo_info] = UVP_read_odv_ecotaxa_exported_zoo(options.zoo_file);
   
-  % 2b| add project for filename creation and clarify
-  zoo.header = options.project;
-  
-  % 2c| Save zoo data to file, the -v7.3 is just a compression flag
-  save(zoo_matfile,'zoo','zoo_info','-v7.3');
+  % 2b| Save zoo data to file, the -v7.3 is just a compression flag
+  save(options.zoo_matfile,'zoo','zoo_info','-v7.3');
 end
 % Limit to fully validated stations
 % Read in file that contains a list of fully validated profile names
@@ -99,6 +94,26 @@ if exist(options.validated,'file')
   zoo = limit_zoo_to_fully_validated_profiles(options.validated,zoo);
 end
 
+%%  | Remove unwanted profiles
+if isfield(options,'exclude_profiles')
+  remove_profiles_par = ismember(par.profile,options.exclude_profiles);
+  remove_profiles_zoo = ismember(zoo.profile,options.exclude_profiles);
+  % Convert to table to remove all profile data
+  if isfield(par,'header'); par = rmfield(par,'header'); end
+  if isfield(zoo,'header'); zoo = rmfield(zoo,'header'); end
+  par = struct2table(par);
+  zoo = struct2table(zoo);
+  % remove unwanted profile data
+  par(remove_profiles_par,:) = [];
+  zoo(remove_profiles_zoo,:) = [];
+  % convert back to structure
+  par = table2struct(par,'ToScalar',true);
+  zoo = table2struct(zoo,'ToScalar',true);
+end
+
+%%  add project for filename creation and clarify
+try zoo.header = options.project_name;end
+try par.header = options.project_name;end
 %% 4 | Read CTD data
 % Still need to incorporate this...
 % Read_hydrographic_cruise_hyfiles
@@ -126,33 +141,30 @@ end
 %% 6 | Manually select OR Hardcode which variables you want to plot
 % Option I  : Select which fields you want to plot below (see Section 7)
 %   OR
-% Option II : hardcode using the following format
+% Option II : hardcode using the following format in the config_script
 %   "plots" is a structure where fieldnames are the exact fieldnames of the
 %   variables you want to plot. In addition, each field has "title" and
 %   "clims" fields.
 % EXAMPLE #1: data.tot_par_abundance (i.e. "total particle abundance")
-%   plots.tot_par_abundance       = struct();
-%   plots.tot_par_abundance.title = {'Abundance (102-203um)[#/L]'};
-%   plots.tot_par_abundance.clims = [5.35 57.86];
+%   options.tot_par_abundance       = struct();
+%   options.tot_par_abundance.title = {'Abundance (102-203um)[#/L]'};
+%   options.tot_par_abundance.clims = [5.35 57.86];
 % EXAMPLE 2: data.VSD (i.e. "particle biovolume"). Since VSD is an NxM
 %   array, you need to define which sizes you want to use.
-%   plots.VSD       = struct();
-%   plots.VSD.title = {'Biovolume (102-128_um)[ppm]'; 'Biovolume (128-161_um)[ppm]'; 'Biovolume (161-203_um)[ppm]'};
-%   plots.VSD.clims = [[0.0002 0.00366];[0.000559 0.0094];[0.00058 0.0106]];
+%   options.VSD       = struct();
+%   options.VSD.title = {'Biovolume (102-128_um)[ppm]'; 'Biovolume (128-161_um)[ppm]'; 'Biovolume (161-203_um)[ppm]'};
+%   options.VSD.clims = [[0.0002 0.00366];[0.000559 0.0094];[0.00058 0.0106]];
 % EXAMPLE 3: ZOO data plotting abundance and biovolume for select taxa
 %   plots = struct();
-%   plots.abund.title = {'abund_Rhizaria_Harosa';'abund_Crustacea_Arthropoda'};
-%   plots.abund.clims = [[0 20];[0 20]];
-%   plots.biovol.title = {'biovol_Rhizaria_Harosa';'biovol_Crustacea_Arthropoda'};
-%   plots.biovol.clims = [[0 20];[0 20]];
+%   options.abund.title = {'abund_Rhizaria_Harosa';'abund_Crustacea_Arthropoda'};
+%   options.abund.clims = [[0 20];[0 20]];
+%   options.biovol.title = {'biovol_Rhizaria_Harosa';'biovol_Crustacea_Arthropoda'};
+%   options.biovol.clims = [[0 20];[0 20]];
 
-plots = struct();
-plots.meansize.title = {'Particle mean size [mm]'};
-plots.meansize.clims = [0.092167 0.25482];
 %% 7 | Determine which variables to plot
-if ~exist('plots','var') || isempty(plots)
+if ~isfield(options,'plots') || isempty(options.plots)
   try
-    plots = UVP_select_paramets_to_plot(data,data_info);
+    options.plots = UVP_select_paramets_to_plot(data,data_info);
   catch
     fprintf('Could not run UVP_select_paramets_to_plot.m script\n')
     fprintf('so... you will need to define the variables manually, or debug\n')
@@ -170,8 +182,6 @@ options.time    = data.datenum;
 options.lat     = data.latitude;
 options.lon     = data.longitude;
 options.depth   = data.Depth;
-
-
 %% 9 | Decide if want to plot sections of data, or the whole range
 try
   fprintf('\nChoose how to visualize data\n')
@@ -189,18 +199,16 @@ catch
   num_sections = 1;
 end
 
-%% 10 | Decide if want to plot individual station data
 %% 10 | Load bathymetry
 try
-  if exist([data.header '_bathymetry.mat'],'file')
-    load([data.header '_bathymetry.mat'])
-    if isfield(bathy,'bathy_transect')
-      data.bathy = interp1(bathy.lat_transect,bathy.bathy_transect,data.latitude);
-    end % check if available
+  if isfield(options,'bathymetry_file') && exist(options.bathymetry_file,'file')
+    load(options.bathymetry_file,'bathy')
+    % Interpolate bathymetry to cruise latitude longitude
+    data.bathy = interp2(bathy.lon,bathy.lat,bathy.z,data.latitude,data.longitude,'linear','extrap');
   else
     % bathy = structure with latitude, longitude, and bathymetry positions
-    bathy = get_bathymetry(data.longitude,data.latitude,data.header);
-    data.bathy = interp1(bathy.lat_transect,bathy.bathy_transect,data.latitude);
+    bathy = get_bathymetry(data.longitude,data.latitude,options.project_name);
+    data.bathy = interp2(bathy.lon,bathy.lat,bathy.z,data.latitude,data.longitude,'linear','extrap');
   end
   % Update options
   if isfield(data,'bathy')
@@ -227,7 +235,7 @@ end
 % This just loops through selected fields
 % Comment out specific plotting functions if you want to skip them
 % For input requirements for functions, see the function documentation
-fields_to_plot = fieldnames(plots);
+fields_to_plot = fieldnames(options.plots);
 for nfield = 1:numel(fields_to_plot)
   field = fields_to_plot{nfield};
   if ~isfield(data,field)
@@ -247,9 +255,9 @@ for nfield = 1:numel(fields_to_plot)
     % ---------------------------------------------------------------------
     %% Loop through available data in case it is NxM array
     % This is the case for VSD, NSD, DNSD, DVSD, & ZOO parameters.
-    for nn = 1:size(plots.(field).title,1)
-      options.plot_title = plots.(field).title{nn};   % Pull out title
-      options.data_clims = plots.(field).clims(nn,:); % Pull out color limits
+    for nn = 1:size(options.plots.(field).title,1)
+      options.plot_title = options.plots.(field).title{nn};   % Pull out title
+      options.data_clims = options.plots.(field).clims(nn,:); % Pull out color limits
       options.data       = data.(field)(:,nn);
       fprintf('\n-----------------------------------------\n')
       fprintf('Plotting %s: %s\n',field,options.plot_title)
@@ -278,17 +286,17 @@ for nfield = 1:numel(fields_to_plot)
       end
       
       [X,Z,DAT] = UVP_griddata(x,options.depth(xrng),options.data(xrng));
-      LAT = griddata(x,options.depth(xrng),options.lat(xrng) ,X,Z); % griddata okay here because nothing fancy, just latitude
+      LAT = griddata(x,options.depth(xrng),options.lat(xrng),X,Z); % griddata okay here because nothing fancy, just latitude
       LON = griddata(x,options.depth(xrng),options.lon(xrng),X,Z); % griddata okay here because nothing fancy, just longitude
       
       % 2 | 2D confour plot
       fig = plot_2d_gridded_transect(X,Z,DAT,options);
       plot_map_inset(fig,options);
-      keyboard
+      
       % 3 | 3D contour plot
-      fig = plot_3d_gridded_transect(LON,LAT,Z,DAT,options,bathy);
-      plot_map_inset(fig,options);
-      keyboard
+      %fig = plot_3d_gridded_transect(LON,LAT,Z,DAT,options,bathy);
+      %plot_map_inset(fig,options);
+      
     end  %% LOOP THROUGH NxM DATA
     % ---------------------------------------------------------------------
   end %% LOOP THROUGH SECTIONS OF DATA

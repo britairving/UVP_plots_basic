@@ -51,7 +51,7 @@ if ~isequal(lon,lon_orig)
 end
 %% Generate full resoltuion coastline data with m_map
 try
-  coastfile = [project_name '_coast.mat'];
+  coastfile = fullfile(pwd,[project_name '_coast.mat']);
   if ~exist(coastfile,'file')
     % Create projection so can generate coastline
     fprintf('Saving coastline data to file: %s\n', coastfile)
@@ -65,10 +65,10 @@ end
 % How to download your own high resolution bathymetric data
 % 1. EXTRACT XYZ GRID - TOPOGRAPHY OR GRAVITY 
 %    <https://topex.ucsd.edu/cgi-bin/get_data.cgi>
-% 2. COPY AND SAVE WEB QUERY RESULTS TO: [project_name '_bathymetry.txt']
+% 2. COPY AND SAVE WEB QUERY RESULTS TO:  fullfile(project_folder, 'bathymetry.txt');
 %    Longitude Latitude Elevation
 try
-  bathy_file = [project_name '_bathymetry.txt'];
+  bathy_file =  fullfile(pwd, [project_name '_bathymetry.txt']);
   bathymetry = readtable(bathy_file);
   % Expect longitude, latitude, elevation (negative)
   if size(bathymetry,2) == 3
@@ -144,9 +144,9 @@ catch
 end
 %% Try to save data to file
 try
-  fprintf('Saving bathymetry data to file: %s\n',[project_name '_bathymetry.mat'])
-  save([project_name '_bathymetry.mat'],'bathy','-v7.3'); % ,'-v7.3' is a compression flag
+  fprintf('Saving bathymetry data to file: %s\n',fullfile(pwd,[project_name '_bathymetry.mat']))
+  save(fullfile(pwd,[project_name '_bathymetry.mat']),'bathy','-v7.3'); % ,'-v7.3' is a compression flag
 catch
-  save([datestr(now,'yyyymmdd') '_bathymetry.mat'],'bathy','-v7.3'); % ,'-v7.3' is a compression flag
+  save(fullfile(pwd,[datestr(now,'yyyymmdd') '_bathymetry.mat']),'bathy','-v7.3'); % ,'-v7.3' is a compression flag
 end
 end %% FUNCTION get_bathymetry
