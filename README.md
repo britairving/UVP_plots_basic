@@ -1,6 +1,10 @@
 # UVP_tools | Basic tools for reading and plotting UVP data
 ## Introduction
 This repository was developed to simplify visualizing Underwater Vision Profiler (UVP) data for the multiple users in the [McDonnell Lab](https://sites.google.com/alaska.edu/mcdonnell/) group. 
+Code has been adapted and built from the original work of Dr. Andrew McDonnell, Jessica Pretty, and Stephanie O'Daly. 
+
+See McDonnell Lab's GitHub page: https://github.com/amcdonnell-lab
+
 
 This toolbox is very much a work in progress and I welcome feedback and comments.
 
