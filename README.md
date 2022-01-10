@@ -21,16 +21,18 @@ UVP data must be exported in detailed ODV format from [Ecotaxa](https://ecotaxa.
 ## Setting up the workflow
 All example plots were generated using the data in the _testing_ folder. This data is from a 2015 repeat hydrography cruise along the p16 line in the North Pacific. More information on the cruise and data can be found in the archived datasets [BCO-DMO PAR Dataset](https://www.bco-dmo.org/dataset/787432) and here [BCO-DMO ZOO Dataset](https://www.bco-dmo.org/dataset/787966). Data were formatted for archival using the publicly available repository [UVP_submission_formatting](https://github.com/britairving/UVP_submission_formatting).
 
+### _[project]_plot_config.m_
+This script is the starting place where you define the project, filepath to your project (for example: options.project = fullfile('UVP_plots_basic','testing','UVP_plots_basic_exports')), parameter to grid data by (e.g. time, lat, or lon), and various other options defined in config_script.
+* (OPTIONAL) USER hardcodes which variables you want to plot - see example for details. If this is not hardcoded, user will be prompted to select variables. 
 ### _UVP_workflow.m_ | START HERE!
-This script is the starting place where you define the project, filepaths, and variables you want to plot.
+This script is the wrapper script!
+call as follows: UVP_workflow(toolbox_dir,config_script), where _toolbox_dir_ is the path to this repository and _config_script_ is the path to the project configuration script. For example: config_script = fullfile('UVP_plots_basic','testing','UVP_plots_basic_exports','exports_plot_config.m") 
 Below are the section headers (use code-folding in Matlab Editor to see section headers clearly).
-* USER DEFINES _UVP_tools_ filepath. Adds the UVP_plots_basic repository folder and utility folder. 
-* USER DEFINES basic plot configuration, project nickname & Ecotaxa filename 
+* Read configuration script - this calls the _config_script_ defined in the input arguments
 * Read PAR file and calculate parameters from particle abundance and biovolume data
 * Read ZOO file with option to limit plotting to fully validated stations
 * Read CTD data (this will be implemented soon, but is not ready yet)
-* Set data to ZOO OR PAR OR CTD data based on _options.plot_type_ 
-* (OPTIONAL) USER hardcodes which variables you want to plot
+* Remove unwanted profiles (OPTIONAL if user defines these in the _config_script_)
 * Prompt: Determine which variables to plot, if not hardcoded. 
 * Remove two deepest depth bins in every profile 
 * Prompt: Decide if want to plot sections of data, or the whole range
@@ -42,7 +44,6 @@ Below are the section headers (use code-folding in Matlab Editor to see section 
 *   GRIDDED: Waterfall plot - shows evolution of data throughout cruise
 *   GRIDDED: 2D contour plot 
 *   GRIDDED: 3D contour plot 
-
 
 ### _UVP_read_odv_ecotaxa_exported_par.m_
 Reads in the UVP PAR file exported from Ecotaxa in detailed ODV format. Data is returned as structure _par_ with information on each field in _par_info_.
