@@ -3,9 +3,10 @@ function options = exports_plot_config
 %
 %  Syntax:
 %    options = exports_plot_config
-
+%
 %  Description:
-%    Define necessary 
+%    Define necessary information to plot this specific project
+%
 %  Citation:
 %    Brita Irving, (2021), UVP_plots_basic, GitHub repository,
 %    https://github.com/britairving/UVP_plots_basic

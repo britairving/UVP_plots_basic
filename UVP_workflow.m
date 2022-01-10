@@ -2,7 +2,7 @@ function UVP_workflow(toolbox_dir,config_script)
 %FUNCTION UVP_WORKFLOW
 %
 %  Syntax:
-%    UVP_workflow(toolbox_dir,filename)
+%    UVP_workflow(toolbox_dir,config_script)
 %
 %  Inputs:  
 %    toolbox_dir   = directory path for UVP_plots_basic toolbox
@@ -64,6 +64,7 @@ end
 if ~isfield(options,'plot_station_data')
   options.plot_station_data = 0; % default to NO
 end
+
 %% 2 | Read PAR file and calculate parameters from particle abundance and biovolume data
 if exist(options.par_matfile,'file')
   load(options.par_matfile);
@@ -94,8 +95,15 @@ end
 if exist(options.validated,'file')
   zoo = limit_zoo_to_fully_validated_profiles(options.validated,zoo);
 end
+%  add project for filename creation and clarify
+try zoo.header = options.project_name;end
+try par.header = options.project_name;end
 
-%%  | Remove unwanted profiles
+%% 4 | Read CTD data
+% Still need to incorporate this...
+% Read_hydrographic_cruise_hyfiles
+
+%% 5 | Remove unwanted profiles
 if isfield(options,'exclude_profiles')
   remove_profiles_par = ismember(par.profile,options.exclude_profiles);
   remove_profiles_zoo = ismember(zoo.profile,options.exclude_profiles);
@@ -112,14 +120,7 @@ if isfield(options,'exclude_profiles')
   zoo = table2struct(zoo,'ToScalar',true);
 end
 
-%%  add project for filename creation and clarify
-try zoo.header = options.project_name;end
-try par.header = options.project_name;end
-%% 4 | Read CTD data
-% Still need to incorporate this...
-% Read_hydrographic_cruise_hyfiles
- 
-%% 5 | Set data to ZOO OR PAR OR CTD data
+%% 7 | Set data to ZOO OR PAR OR CTD data
 % If you want to plot ZOO variables, data = zoo; etc
 switch options.plot_type
   case 'zoo'
@@ -139,7 +140,7 @@ switch options.plot_type
     error('plot_type not recognized: choices are zoo, par, or ctd')
 end
 
-%% 6 | Manually select OR Hardcode which variables you want to plot
+%% 7 | Manually select OR Hardcode which variables you want to plot
 % Option I  : Select which fields you want to plot below (see Section 7)
 %   OR
 % Option II : hardcode using the following format in the config_script
@@ -162,7 +163,7 @@ end
 %   options.biovol.title = {'biovol_Rhizaria_Harosa';'biovol_Crustacea_Arthropoda'};
 %   options.biovol.clims = [[0 20];[0 20]];
 
-%% 7 | Determine which variables to plot
+%% 8 | Determine which variables to plot
 if ~isfield(options,'plots') || isempty(options.plots)
   try
     options.plots = UVP_select_paramets_to_plot(data,data_info);
@@ -172,8 +173,7 @@ if ~isfield(options,'plots') || isempty(options.plots)
   end
 end
 
-
-%% 8 | Remove two deepest depth bins in every profile
+%% 9 | Remove two deepest depth bins in every profile
 % default to removing last two depth bins
 [data] = uvp_remove_last_two_depth_bins(data);
 
@@ -183,7 +183,8 @@ options.time    = data.datenum;
 options.lat     = data.latitude;
 options.lon     = data.longitude;
 options.depth   = data.Depth;
-%% 9 | Decide if want to plot sections of data, or the whole range
+
+%% 10 | Decide if want to plot sections of data, or the whole range
 try
   fprintf('\nChoose how to visualize data\n')
   fprintf(' <1> All data (Default)\n')
@@ -200,7 +201,7 @@ catch
   num_sections = 1;
 end
 
-%% 10 | Load bathymetry
+%% 11 | Load bathymetry
 try
   if isfield(options,'bathymetry_file') && exist(options.bathymetry_file,'file')
     load(options.bathymetry_file,'bathy')
@@ -220,19 +221,19 @@ catch
   fprintf('...see instructions on github page for details if you want to include bathymetry\n')
 end
 
-%% 11 | PLOTS | Standard PAR 2D vertical profile plots
-%% 11a | Plot standard 3 panel total particle abundance, total particle biovolume, and slope of PSD
+%% 12 | PLOTS | Standard PAR 2D vertical profile plots
+%% 12a | Plot standard 3 panel total particle abundance, total particle biovolume, and slope of PSD
 if strcmp(options.plot_type,'par')
   plot_uvp_multipanel(par,par_info,{'tot_par_abundance' 'tot_par_biovolume' 'slope_b'},options);
 end
 
-%% 11b | Plot vertical profiles of different sizes at each station
+%% 12b | Plot vertical profiles of different sizes at each station
 % NSD is short for number size distribution and is in units of #/L
 if options.plot_station_data
   plot_uvp_NSD(par,par_info,options);
 end
 
-%% 12 | PLOTS | Generate plots for each field
+%% 13 | PLOTS | Generate plots for each field
 % This just loops through selected fields
 % Comment out specific plotting functions if you want to skip them
 % For input requirements for functions, see the function documentation
