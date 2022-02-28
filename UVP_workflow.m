@@ -206,11 +206,11 @@ try
   if isfield(options,'bathymetry_file') && exist(options.bathymetry_file,'file')
     load(options.bathymetry_file,'bathy')
     % Interpolate bathymetry to cruise latitude longitude
-    data.bathy = interp2(bathy.lon,bathy.lat,bathy.z,data.latitude,data.longitude,'linear','extrap');
+    data.bathy = interp2(bathy.lon,bathy.lat,bathy.z,data.longitude,data.latitude,'linear','extrap');
   else
     % bathy = structure with latitude, longitude, and bathymetry positions
     bathy = get_bathymetry(data.longitude,data.latitude,options.project_name);
-    data.bathy = interp2(bathy.lon,bathy.lat,bathy.z,data.latitude,data.longitude,'linear','extrap');
+    data.bathy = interp2(bathy.lon,bathy.lat,bathy.z,data.longitude,data.latitude,'linear','extrap');
   end
   % Update options
   if isfield(data,'bathy')
