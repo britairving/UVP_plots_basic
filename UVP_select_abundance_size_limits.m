@@ -83,6 +83,11 @@ while ~mips_done
   
   %% Store MIPs definitions
   mips.idx_size_bin = find([checks.Value]);
+  if mips.idx_size_bin == 2
+    % if only 1 size bin selected, assume that's correct and just include
+    % that single size bin... i.e. 161-203um
+    mips.idx_size_bin = [mips.idx_size_bin; mips.idx_size_bin];
+  end
   if numel(mips.idx_size_bin) ~= 2
     fprintf('Must select start AND end bin sizes.. try again\n')
     mips_done = 0;

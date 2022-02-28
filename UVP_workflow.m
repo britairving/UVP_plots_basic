@@ -139,7 +139,7 @@ switch options.plot_type
   otherwise
     error('plot_type not recognized: choices are zoo, par, or ctd')
 end
-
+keyboard
 %% 7 | Manually select OR Hardcode which variables you want to plot
 % Option I  : Select which fields you want to plot below (see Section 7)
 %   OR
