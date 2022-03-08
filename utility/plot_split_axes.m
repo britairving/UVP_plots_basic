@@ -26,7 +26,7 @@ ax.YLim        = [split_depth maxdepth];
 ax.Position(4) = ax.Position(4)/2;
 ax.YAxis.Label.Units = 'normalized'; 
 ax.YAxis.Label.Position(2) = 1;
-ax.GridAlpha = 0.8;
+% ax.GridAlpha = 0.8;
 
 %% Create an exact copy of the axis 
 a_top = copyobj(ax,gcf);
@@ -40,7 +40,7 @@ a_top.Position(2) = a_top.Position(2) + a_top.Position(4);
 a_top.YLabel      = [];
 a_top.XTickLabel  = [];
 a_top.XLabel      = [];
-a_top.GridAlpha   = 0.8;
+% a_top.GridAlpha   = 0.8;
 % make sure xlimis consistent
 ax.XLim    = xlim1;
 a_top.XLim = xlim1;
