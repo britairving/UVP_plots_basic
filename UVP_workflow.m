@@ -1,4 +1,4 @@
-function UVP_workflow(toolbox_dir,config_script)
+function  UVP_workflow(toolbox_dir,config_script)
 %FUNCTION UVP_WORKFLOW
 %
 %  Syntax:
